@@ -6,7 +6,7 @@ import (
 
 type Vocabulary struct {
 	Words []WordPair
-	Stats map[string]WordStats
+	Stats map[string]*WordStats
 }
 
 type WordStats struct {

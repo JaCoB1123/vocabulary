@@ -53,7 +53,7 @@ func NewVocabulary() (*Vocabulary, error) {
 	}
 	vocabulary.Words = words
 
-	var stats map[string]WordStats
+	var stats map[string]*WordStats
 	err = DeserializeFile(statsfilename, &stats)
 	if err != nil {
 		return nil, fmt.Errorf("Could not read stats %v", err)
