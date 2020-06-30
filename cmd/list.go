@@ -69,7 +69,9 @@ func SerializeFile(filename string, target interface{}) error {
 		return fmt.Errorf("Could not create file %s: %v", filename, err)
 	}
 
-	err = json.NewEncoder(wordsfile).Encode(target)
+	encoder := json.NewEncoder(wordsfile)
+	encoder.SetIndent("", "    ")
+	err = encoder.Encode(target)
 	if err != nil {
 		return fmt.Errorf("Could not write JSON to file %s: %v", filename, err)
 	}
