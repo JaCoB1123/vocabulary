@@ -60,6 +60,10 @@ func NewVocabulary() (*Vocabulary, error) {
 	}
 	vocabulary.Stats = stats
 
+	if vocabulary.Stats == nil {
+		vocabulary.Stats = make(map[string]*WordStats)
+	}
+
 	return &vocabulary, nil
 }
 
