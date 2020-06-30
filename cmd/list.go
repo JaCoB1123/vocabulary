@@ -80,7 +80,7 @@ func SerializeFile(filename string, target interface{}) error {
 }
 
 func DeserializeFile(filename string, target interface{}) error {
-	wordsfile, err := os.Open(filename)
+	file, err := os.Open(filename)
 	if os.IsNotExist(err) {
 		return SerializeFile(filename, target)
 	}
@@ -89,8 +89,7 @@ func DeserializeFile(filename string, target interface{}) error {
 		return fmt.Errorf("Could not open file %s: %v", filename, err)
 	}
 
-	var words []WordPair
-	err = json.NewDecoder(wordsfile).Decode(&words)
+	err = json.NewDecoder(file).Decode(&target)
 	if err != nil {
 		return fmt.Errorf("Could not deserialize JSON %s: %v", filename, err)
 	}
