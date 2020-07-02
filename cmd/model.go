@@ -23,3 +23,15 @@ type WordPair struct {
 	Translation string
 	Tags        []string
 }
+
+func (stats *WordStats) CorrectAnswer() {
+	stats.AnswersSinceLastError++
+	stats.CorrectAnswers++
+	stats.LastCorrect = time.Now()
+}
+
+func (stats *WordStats) FalseAnswer() {
+	stats.AnswersSinceLastError = 0
+	stats.FalseAnswers++
+	stats.LastFalse = time.Now()
+}

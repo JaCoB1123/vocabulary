@@ -5,7 +5,6 @@ import (
 	"fmt"
 	"log"
 	"os"
-	"time"
 
 	"github.com/spf13/cobra"
 )
@@ -39,18 +38,20 @@ var learnCommand = &cobra.Command{
 
 		stats.Answers++
 		if userInput == pair.Translation {
-			stats.AnswersSinceLastError++
-			stats.CorrectAnswers++
-			stats.LastCorrect = time.Now()
-
+			stats.CorrectAnswer()
 			fmt.Println("Correct!")
 		} else {
-			stats.AnswersSinceLastError = 0
-			stats.FalseAnswers++
-			stats.LastFalse = time.Now()
+			similarity := CompareTwoStrings(userInput, pair.Translation)
+			fmt.Printf("Similarity: %f\n", similarity)
+
+			acceptAnswer := similarity > 0.5
+
+			fmt.Printf("Correct answer:\n%s\n\n", pair.Translation)
+
+			acceptAnswer = promptTrueOrFalse(reader, "Accept Answer?", acceptAnswer)
+			stats.CorrectAnswer()
+			stats.FalseAnswer()
 			fmt.Println("Wrong!")
-			fmt.Printf("Your answer: '%v'\n", []byte(userInput))
-			fmt.Printf("Correct answer: '%s'\n", pair.Translation)
 		}
 
 		vocabulary.Save()
