@@ -101,7 +101,6 @@ func (vocabulary Vocabulary) getLeastConfidentWord() (*WordPair, *WordStats, err
 		}
 
 		if score < bestScore {
-			fmt.Printf("Found less learned word %s: %d\n", word.Name, score)
 			index = i
 			bestScore = score
 		}
