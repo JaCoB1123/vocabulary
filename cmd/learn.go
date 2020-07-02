@@ -3,6 +3,7 @@ package cmd
 import (
 	"bufio"
 	"fmt"
+	"log"
 	"os"
 	"time"
 
@@ -10,8 +11,8 @@ import (
 )
 
 func init() {
-
 	rootCmd.AddCommand(learnCommand)
+	tags = learnCommand.Flags().StringArrayP("tag", "t", []string{}, "")
 }
 
 var learnCommand = &cobra.Command{
@@ -21,7 +22,10 @@ var learnCommand = &cobra.Command{
 	Run: func(cmd *cobra.Command, args []string) {
 		vocabulary := MustVocabulary()
 
-		pair, stats := vocabulary.getLeastConfidentWord()
+		pair, stats, err := vocabulary.getLeastConfidentWord()
+		if err != nil {
+			log.Fatalf("Error finding word: %s\n", err.Error())
+		}
 		fmt.Println("Word: ", pair.Name)
 
 		reader := bufio.NewReader(os.Stdin)
@@ -51,12 +55,16 @@ var learnCommand = &cobra.Command{
 	},
 }
 
-var tags = learnCommand.Flags().StringArrayP("tag", "t", []string{}, "")
+var tags *[]string
 
-func (vocabulary Vocabulary) getLeastConfidentWord() (*WordPair, *WordStats) {
+func (vocabulary Vocabulary) getLeastConfidentWord() (*WordPair, *WordStats, error) {
 	bestScore := 999999
-	index := 0
+	index := -1
 	for i, word := range vocabulary.Words {
+		if !containsAll(*tags, word.Tags) {
+			continue
+		}
+
 		var stats *WordStats
 		if mapstats, ok := vocabulary.Stats[word.Name]; ok {
 			stats = mapstats
@@ -72,6 +80,10 @@ func (vocabulary Vocabulary) getLeastConfidentWord() (*WordPair, *WordStats) {
 		}
 	}
 
+	if index == -1 {
+		return nil, nil, fmt.Errorf("No word matching tags %v found", *tags)
+	}
+
 	word := vocabulary.Words[index]
-	return &word, vocabulary.Stats[word.Name]
+	return &word, vocabulary.Stats[word.Name], nil
 }
