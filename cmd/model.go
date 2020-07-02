@@ -35,3 +35,11 @@ func (stats *WordStats) FalseAnswer() {
 	stats.FalseAnswers++
 	stats.LastFalse = time.Now()
 }
+
+func (stats *WordStats) LastAnswered() time.Time {
+	if stats.LastCorrect.After(stats.LastFalse) {
+		return stats.LastCorrect
+	}
+
+	return stats.LastFalse
+}

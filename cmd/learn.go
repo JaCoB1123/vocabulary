@@ -4,7 +4,9 @@ import (
 	"bufio"
 	"fmt"
 	"log"
+	"math"
 	"os"
+	"time"
 
 	"github.com/spf13/cobra"
 )
@@ -49,33 +51,52 @@ var learnCommand = &cobra.Command{
 			fmt.Printf("Correct answer:\n%s\n\n", pair.Translation)
 
 			acceptAnswer = promptTrueOrFalse(reader, "Accept Answer?", acceptAnswer)
-			stats.CorrectAnswer()
-			stats.FalseAnswer()
-			fmt.Println("Wrong!")
+			if acceptAnswer {
+				stats.CorrectAnswer()
+			} else {
+				stats.FalseAnswer()
+			}
 		}
 
 		vocabulary.Save()
 	},
 }
 
+func (vocabulary Vocabulary) getStats(word WordPair) *WordStats {
+	var stats *WordStats
+	if mapstats, ok := vocabulary.Stats[word.Name]; ok {
+		return mapstats
+	}
+	stats = &WordStats{}
+	vocabulary.Stats[word.Name] = stats
+	return stats
+
+}
+
 func (vocabulary Vocabulary) getLeastConfidentWord() (*WordPair, *WordStats, error) {
-	bestScore := 999999
+	bestScore := int64(math.MaxInt64)
 	index := -1
 	for i, word := range vocabulary.Words {
 		if !containsAll(*learnTags, word.Tags) {
 			continue
 		}
 
-		var stats *WordStats
-		if mapstats, ok := vocabulary.Stats[word.Name]; ok {
-			stats = mapstats
-		} else {
-			stats = &WordStats{}
-			vocabulary.Stats[word.Name] = stats
+		stats := vocabulary.getStats(word)
+
+		requiredAge := getRecommendedDuration(stats.AnswersSinceLastError)
+		if stats.LastCorrect.After(time.Now().Add(requiredAge)) {
+			// ignore word as it has been answered recently
+			continue
 		}
 
-		score := stats.AnswersSinceLastError
+		score := int64(stats.AnswersSinceLastError + 1)
+
+		if !stats.LastAnswered().IsZero() {
+			score = score * stats.LastAnswered().Unix()
+		}
+
 		if score < bestScore {
+			fmt.Printf("Found less learned word %s: %d\n", word.Name, score)
 			index = i
 			bestScore = score
 		}
@@ -87,4 +108,25 @@ func (vocabulary Vocabulary) getLeastConfidentWord() (*WordPair, *WordStats, err
 
 	word := vocabulary.Words[index]
 	return &word, vocabulary.Stats[word.Name], nil
+}
+
+func getRecommendedDuration(sucessfullTries int) time.Duration {
+	if sucessfullTries <= 0 {
+		return time.Duration(0)
+	}
+
+	switch sucessfullTries {
+	case 1:
+		return time.Duration(time.Minute * 10)
+	case 2:
+		return time.Duration(time.Hour)
+	case 3:
+		return time.Duration(time.Hour * 24)
+	case 4:
+		return time.Duration(time.Hour * 24 * 7)
+	case 5:
+		return time.Duration(time.Hour * 24 * 30)
+	default:
+		return time.Duration(time.Hour * 24 * 30 * 6)
+	}
 }
