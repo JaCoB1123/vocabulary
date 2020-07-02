@@ -78,6 +78,22 @@ func (vocabulary Vocabulary) getStats(word WordPair) *WordStats {
 
 }
 
+func (stats WordStats) getScore() int64 {
+
+	requiredAge := getRecommendedDuration(stats.AnswersSinceLastError)
+	if stats.LastCorrect.After(time.Now().Add(requiredAge)) {
+		// ignore word as it has been answered recently
+		return math.MinInt64
+	}
+
+	score := int64(stats.AnswersSinceLastError + 1)
+
+	if !stats.LastAnswered().IsZero() {
+		score = score * stats.LastAnswered().Unix()
+	}
+	return score
+}
+
 func (vocabulary Vocabulary) getLeastConfidentWord() (*WordPair, *WordStats, error) {
 	bestScore := int64(math.MaxInt64)
 	index := -1
@@ -88,16 +104,10 @@ func (vocabulary Vocabulary) getLeastConfidentWord() (*WordPair, *WordStats, err
 
 		stats := vocabulary.getStats(word)
 
-		requiredAge := getRecommendedDuration(stats.AnswersSinceLastError)
-		if stats.LastCorrect.After(time.Now().Add(requiredAge)) {
+		score := stats.getScore()
+		if score == math.MinInt64 {
 			// ignore word as it has been answered recently
 			continue
-		}
-
-		score := int64(stats.AnswersSinceLastError + 1)
-
-		if !stats.LastAnswered().IsZero() {
-			score = score * stats.LastAnswered().Unix()
 		}
 
 		if score < bestScore {

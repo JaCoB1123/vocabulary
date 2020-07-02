@@ -21,7 +21,10 @@ var listCmd = &cobra.Command{
 		vocabulary := MustVocabulary()
 
 		for _, pair := range vocabulary.Words {
-			fmt.Printf("%s: %s\n", pair.Name, pair.Translation)
+			stats := vocabulary.getStats(pair)
+			score := stats.getScore()
+
+			fmt.Printf("%40s: %40s (%10d)\n", pair.Name, pair.Translation, score)
 		}
 	},
 }
