@@ -12,7 +12,7 @@ import (
 
 func init() {
 	rootCmd.AddCommand(learnCommand)
-	tags = learnCommand.Flags().StringArrayP("tag", "t", []string{}, "")
+	tags = learnCommand.Flags().StringArrayP("tag", "t", []string{}, "Include only words having all specified tags")
 }
 
 var learnCommand = &cobra.Command{
