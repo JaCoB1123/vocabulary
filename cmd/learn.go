@@ -10,9 +10,11 @@ import (
 	"github.com/spf13/cobra"
 )
 
+var learnTags *[]string
+
 func init() {
 	rootCmd.AddCommand(learnCommand)
-	tags = learnCommand.Flags().StringArrayP("tag", "t", []string{}, "Include only words having all specified tags")
+	learnTags = learnCommand.Flags().StringArrayP("tag", "t", []string{}, "Include only words having all specified tags")
 }
 
 var learnCommand = &cobra.Command{
@@ -59,7 +61,7 @@ func (vocabulary Vocabulary) getLeastConfidentWord() (*WordPair, *WordStats, err
 	bestScore := 999999
 	index := -1
 	for i, word := range vocabulary.Words {
-		if !containsAll(*tags, word.Tags) {
+		if !containsAll(*learnTags, word.Tags) {
 			continue
 		}
 
@@ -79,7 +81,7 @@ func (vocabulary Vocabulary) getLeastConfidentWord() (*WordPair, *WordStats, err
 	}
 
 	if index == -1 {
-		return nil, nil, fmt.Errorf("No word matching tags %v found", *tags)
+		return nil, nil, fmt.Errorf("No word matching tags %v found", *learnTags)
 	}
 
 	word := vocabulary.Words[index]
