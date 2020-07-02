@@ -55,8 +55,6 @@ var learnCommand = &cobra.Command{
 	},
 }
 
-var tags *[]string
-
 func (vocabulary Vocabulary) getLeastConfidentWord() (*WordPair, *WordStats, error) {
 	bestScore := 999999
 	index := -1
