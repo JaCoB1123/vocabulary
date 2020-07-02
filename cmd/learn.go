@@ -13,9 +13,12 @@ import (
 
 var learnTags *[]string
 
+var count *int
+
 func init() {
 	rootCmd.AddCommand(learnCommand)
 	learnTags = learnCommand.Flags().StringArrayP("tag", "t", []string{}, "Include only words having all specified tags")
+	count = learnCommand.Flags().IntP("count", "n", 1, "Ask this number of words before quitting")
 }
 
 var learnCommand = &cobra.Command{
@@ -25,36 +28,38 @@ var learnCommand = &cobra.Command{
 	Run: func(cmd *cobra.Command, args []string) {
 		vocabulary := MustVocabulary()
 
-		pair, stats, err := vocabulary.getLeastConfidentWord()
-		if err != nil {
-			log.Fatalf("Error finding word: %s\n", err.Error())
-		}
-		fmt.Println("Word: ", pair.Name)
+		for i := 0; i < *count; i++ {
+			pair, stats, err := vocabulary.getLeastConfidentWord()
+			if err != nil {
+				log.Fatalf("Error finding word: %s\n", err.Error())
+			}
+			fmt.Println("Word: ", pair.Name)
 
-		reader := bufio.NewReader(os.Stdin)
+			reader := bufio.NewReader(os.Stdin)
 
-		fmt.Print("Answer: ")
-		userInput, _ := reader.ReadString('\n')
-		userInput = trimSuffixLineEnding(userInput)
-		fmt.Println(userInput)
+			fmt.Print("Answer: ")
+			userInput, _ := reader.ReadString('\n')
+			userInput = trimSuffixLineEnding(userInput)
+			fmt.Println(userInput)
 
-		stats.Answers++
-		if userInput == pair.Translation {
-			stats.CorrectAnswer()
-			fmt.Println("Correct!")
-		} else {
-			similarity := CompareTwoStrings(userInput, pair.Translation)
-			fmt.Printf("Similarity: %f\n", similarity)
-
-			acceptAnswer := similarity > 0.5
-
-			fmt.Printf("Correct answer:\n%s\n\n", pair.Translation)
-
-			acceptAnswer = promptTrueOrFalse(reader, "Accept Answer?", acceptAnswer)
-			if acceptAnswer {
+			stats.Answers++
+			if userInput == pair.Translation {
 				stats.CorrectAnswer()
+				fmt.Println("Correct!")
 			} else {
-				stats.FalseAnswer()
+				similarity := CompareTwoStrings(userInput, pair.Translation)
+				fmt.Printf("Similarity: %f\n", similarity)
+
+				acceptAnswer := similarity > 0.5
+
+				fmt.Printf("Correct answer:\n%s\n\n", pair.Translation)
+
+				acceptAnswer = promptTrueOrFalse(reader, "Accept Answer?", acceptAnswer)
+				if acceptAnswer {
+					stats.CorrectAnswer()
+				} else {
+					stats.FalseAnswer()
+				}
 			}
 		}
 
