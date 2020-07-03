@@ -29,12 +29,9 @@ var listCmd = &cobra.Command{
 	},
 }
 
-var wordsfilename = "words.json"
-var statsfilename = "stats.json"
-
 func (vocabulary Vocabulary) Save() {
-	SerializeFile(wordsfilename, vocabulary.Words)
-	SerializeFile(statsfilename, vocabulary.Stats)
+	SerializeFile(*wordsfilename, vocabulary.Words)
+	SerializeFile(*statsfilename, vocabulary.Stats)
 }
 
 func MustVocabulary() *Vocabulary {
@@ -50,14 +47,14 @@ func NewVocabulary() (*Vocabulary, error) {
 	var vocabulary Vocabulary
 
 	var words []WordPair
-	err := DeserializeFile(wordsfilename, &words)
+	err := DeserializeFile(*wordsfilename, &words)
 	if err != nil {
 		return nil, fmt.Errorf("Could not read words: %v", err)
 	}
 	vocabulary.Words = words
 
 	var stats map[string]*WordStats
-	err = DeserializeFile(statsfilename, &stats)
+	err = DeserializeFile(*statsfilename, &stats)
 	if err != nil {
 		return nil, fmt.Errorf("Could not read stats %v", err)
 	}

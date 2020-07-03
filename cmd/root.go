@@ -16,7 +16,12 @@ var rootCmd = &cobra.Command{
 	},
 }
 
+var wordsfilename *string
+var statsfilename *string
+
 func Execute() {
+	statsfilename = rootCmd.PersistentFlags().String("stats-file", "stats.json", "Loads stats from the specified file")
+	wordsfilename = rootCmd.PersistentFlags().String("words-file", "words.json", "Loads words from the specified file")
 	if err := rootCmd.Execute(); err != nil {
 		fmt.Println(err)
 		os.Exit(1)
