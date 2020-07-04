@@ -10,12 +10,12 @@ type Vocabulary struct {
 }
 
 type WordStats struct {
-	Answers               int
-	CorrectAnswers        int
-	FalseAnswers          int
-	LastCorrect           time.Time
-	LastFalse             time.Time
-	AnswersSinceLastError int
+	Answers               int       `json:",omitempty"`
+	CorrectAnswers        int       `json:",omitempty"`
+	FalseAnswers          int       `json:",omitempty"`
+	LastCorrect           time.Time `json:",omitempty"`
+	LastFalse             time.Time `json:",omitempty"`
+	AnswersSinceLastError int       `json:",omitempty"`
 }
 
 type WordPair struct {
