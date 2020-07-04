@@ -21,9 +21,18 @@ var statsCmd = &cobra.Command{
 		levelStats := make([]int, 8)
 		tagStats := map[string]int{}
 		totalAnswers := 0
+		alwaysCorrect := 0
+		wordsAnswered := 0
 		for _, pair := range vocabulary.Words {
 			stats := vocabulary.getStats(pair)
 			totalAnswers = totalAnswers + stats.Answers
+			if stats.CorrectAnswers > 0 && stats.FalseAnswers == 0 {
+				alwaysCorrect++
+			}
+
+			if stats.Answers > 0 {
+				wordsAnswered = wordsAnswered + 1
+			}
 
 			for _, tag := range pair.Tags {
 				tagStats[tag] = tagStats[tag] + 1
@@ -49,7 +58,10 @@ var statsCmd = &cobra.Command{
 		}
 		fmt.Println()
 
-		fmt.Printf("Total words:   %7d\n", len(vocabulary.Words))
-		fmt.Printf("Total answers: %7d\n", totalAnswers)
+		fmt.Printf("Words answered at least once: %7d\n", wordsAnswered)
+		fmt.Printf("Words with 100%% success:      %7d\n", alwaysCorrect)
+
+		fmt.Printf("Total words:                  %7d\n", len(vocabulary.Words))
+		fmt.Printf("Total answers:                %7d\n", totalAnswers)
 	},
 }
