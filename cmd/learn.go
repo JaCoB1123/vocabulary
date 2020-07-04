@@ -8,6 +8,7 @@ import (
 	"os"
 	"time"
 
+	"github.com/agnivade/levenshtein"
 	"github.com/spf13/cobra"
 )
 
@@ -47,7 +48,12 @@ var learnCommand = &cobra.Command{
 				stats.CorrectAnswer()
 				fmt.Println("Correct!")
 			} else {
-				similarity := CompareTwoStrings(userInput, pair.Translation)
+				distance := levenshtein.ComputeDistance(userInput, pair.Translation)
+				length := len(userInput)
+				if len(pair.Translation) > length {
+					length = len(pair.Translation)
+				}
+				similarity := 1 - float32(distance)/float32(length)
 				fmt.Printf("Similarity: %f\n", similarity)
 
 				acceptAnswer := similarity > 0.5
