@@ -12,26 +12,6 @@ func trimSuffixLineEnding(text string) string {
 	text = strings.TrimSuffix(text, "\n")
 	return text
 }
-
-func containsAll(needles []string, list []string) bool {
-	for _, needle := range needles {
-		if !contains(needle, list) {
-			return false
-		}
-	}
-	return true
-}
-
-func contains(needle string, list []string) bool {
-	for _, b := range list {
-		if b == needle {
-			return true
-		}
-	}
-
-	return false
-}
-
 func promptTrueOrFalse(reader *bufio.Reader, question string, fallback bool) bool {
 	fmt.Printf("%s (true/false, default: %t) ", question, fallback)
 	userInput, _ := reader.ReadString('\n')

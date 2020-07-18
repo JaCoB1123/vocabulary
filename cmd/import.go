@@ -8,6 +8,8 @@ import (
 	"os"
 
 	"github.com/spf13/cobra"
+
+	voc "github.com/JaCoB1123/vocabulary/internal/vocabulary"
 )
 
 var importTags *[]string
@@ -28,7 +30,7 @@ var importCommand = &cobra.Command{
 	Short: "Import word pairs",
 	Long:  "Imports new word pairs from a comma separated values file",
 	Run: func(cmd *cobra.Command, args []string) {
-		vocabulary := MustVocabulary()
+		vocabulary := voc.MustVocabulary(*wordsfilename, *statsfilename)
 
 		file, err := os.Open(*importFilename)
 		if err != nil {
@@ -46,7 +48,7 @@ var importCommand = &cobra.Command{
 				log.Fatal(err)
 			}
 
-			wordpair := WordPair{
+			wordpair := voc.WordPair{
 				Name:        record[0],
 				Translation: record[1],
 				Tags:        *importTags,
@@ -56,6 +58,6 @@ var importCommand = &cobra.Command{
 			fmt.Println(wordpair)
 		}
 
-		vocabulary.Save()
+		vocabulary.Save(*wordsfilename, *statsfilename)
 	},
 }

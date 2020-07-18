@@ -5,6 +5,8 @@ import (
 	"sort"
 
 	"github.com/spf13/cobra"
+
+	voc "github.com/JaCoB1123/vocabulary/internal/vocabulary"
 )
 
 func init() {
@@ -16,7 +18,7 @@ var statsCmd = &cobra.Command{
 	Short: "Show learning stats",
 	Long:  "Show stats about current the learning progress",
 	Run: func(cmd *cobra.Command, args []string) {
-		vocabulary := MustVocabulary()
+		vocabulary := voc.MustVocabulary(*wordsfilename, *statsfilename)
 
 		levelStats := make([]int, 8)
 		tagStats := map[string]int{}
@@ -25,7 +27,7 @@ var statsCmd = &cobra.Command{
 		alwaysCorrect := 0
 		wordsAnswered := 0
 		for _, pair := range vocabulary.Words {
-			stats := vocabulary.getStats(pair)
+			stats := vocabulary.GetStats(pair)
 			totalAnswers = totalAnswers + stats.Answers
 			if stats.CorrectAnswers > 0 && stats.FalseAnswers == 0 {
 				alwaysCorrect++
@@ -40,7 +42,7 @@ var statsCmd = &cobra.Command{
 			}
 			levelStats[stats.AnswersSinceLastError] = levelStats[stats.AnswersSinceLastError] + 1
 
-			if stats.isDue() {
+			if stats.IsDue() {
 				totalDue += 1
 			}
 		}

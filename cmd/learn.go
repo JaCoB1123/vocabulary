@@ -4,12 +4,12 @@ import (
 	"bufio"
 	"fmt"
 	"log"
-	"math"
 	"os"
-	"time"
 
 	"github.com/agnivade/levenshtein"
 	"github.com/spf13/cobra"
+
+	voc "github.com/JaCoB1123/vocabulary/internal/vocabulary"
 )
 
 var learnTags *[]string
@@ -27,10 +27,10 @@ var learnCommand = &cobra.Command{
 	Short: "Add a new word pair",
 	Long:  "Adds a new word pair to your vocabulary",
 	Run: func(cmd *cobra.Command, args []string) {
-		vocabulary := MustVocabulary()
+		vocabulary := voc.MustVocabulary(*wordsfilename, *statsfilename)
 
 		for i := 0; i < *count; i++ {
-			pair, stats, err := vocabulary.getLeastConfidentWord()
+			pair, stats, err := vocabulary.GetLeastConfidentWord(*learnTags)
 			if err != nil {
 				log.Fatalf("Error finding word: %s\n", err.Error())
 			}
@@ -69,92 +69,6 @@ var learnCommand = &cobra.Command{
 			}
 		}
 
-		vocabulary.Save()
+		vocabulary.Save(*wordsfilename, *statsfilename)
 	},
-}
-
-func (vocabulary Vocabulary) getStats(word WordPair) *WordStats {
-	var stats *WordStats
-	if mapstats, ok := vocabulary.Stats[word.Name]; ok {
-		return mapstats
-	}
-	stats = &WordStats{}
-	vocabulary.Stats[word.Name] = stats
-	return stats
-
-}
-
-// check if word should be practiced
-func (stats WordStats) isDue() bool {
-	if stats.LastCorrect.IsZero() {
-		return true
-	}
-
-	requiredAge := getRecommendedDuration(stats.AnswersSinceLastError)
-	dueOn := stats.LastCorrect.Add(requiredAge)
-	return time.Now().After(dueOn)
-}
-
-func (stats WordStats) getScore() int64 {
-	if !stats.isDue() {
-		return math.MinInt64
-	}
-
-	score := int64(stats.AnswersSinceLastError + 1)
-
-	if !stats.LastAnswered().IsZero() {
-		score = score * stats.LastAnswered().Unix()
-	}
-	return score
-}
-
-func (vocabulary Vocabulary) getLeastConfidentWord() (*WordPair, *WordStats, error) {
-	bestScore := int64(math.MaxInt64)
-	index := -1
-	for i, word := range vocabulary.Words {
-		if !containsAll(*learnTags, word.Tags) {
-			continue
-		}
-
-		stats := vocabulary.getStats(word)
-
-		score := stats.getScore()
-		if score == math.MinInt64 {
-			// ignore word as it has been answered recently
-			continue
-		}
-
-		if score < bestScore {
-			index = i
-			bestScore = score
-		}
-	}
-
-	if index == -1 {
-		return nil, nil, fmt.Errorf("No word matching tags %v found", *learnTags)
-	}
-
-	word := vocabulary.Words[index]
-	return &word, vocabulary.Stats[word.Name], nil
-}
-
-func getRecommendedDuration(sucessfullTries int) time.Duration {
-	if sucessfullTries <= 0 {
-		return time.Duration(0)
-	}
-
-	switch sucessfullTries {
-	case 1:
-		return time.Duration(time.Minute * 30)
-	case 2:
-		return time.Duration(time.Hour * 3)
-	case 3:
-		return time.Duration(time.Hour * 24)
-	case 4:
-		return time.Duration(time.Hour * 24 * 7)
-	case 5:
-		return time.Duration(time.Hour * 24 * 30)
-	default:
-		return time.Duration(time.Hour * 24 * 30 * 6)
-	}
 }
