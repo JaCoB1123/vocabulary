@@ -84,10 +84,15 @@ func (vocabulary Vocabulary) getStats(word WordPair) *WordStats {
 
 }
 
-// check if word should be practiced again
+// check if word should be practiced
 func (stats WordStats) isDue() bool {
+	if stats.LastCorrect.IsZero() {
+		return true
+	}
+
 	requiredAge := getRecommendedDuration(stats.AnswersSinceLastError)
-	return stats.LastCorrect.Before(time.Now().Add(requiredAge))
+	dueOn := stats.LastCorrect.Add(requiredAge)
+	return time.Now().After(dueOn)
 }
 
 func (stats WordStats) getScore() int64 {
@@ -140,9 +145,9 @@ func getRecommendedDuration(sucessfullTries int) time.Duration {
 
 	switch sucessfullTries {
 	case 1:
-		return time.Duration(time.Minute * 10)
+		return time.Duration(time.Minute * 30)
 	case 2:
-		return time.Duration(time.Hour)
+		return time.Duration(time.Hour * 3)
 	case 3:
 		return time.Duration(time.Hour * 24)
 	case 4:
