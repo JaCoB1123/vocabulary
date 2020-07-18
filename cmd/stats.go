@@ -20,6 +20,7 @@ var statsCmd = &cobra.Command{
 
 		levelStats := make([]int, 8)
 		tagStats := map[string]int{}
+		totalDue := 0
 		totalAnswers := 0
 		alwaysCorrect := 0
 		wordsAnswered := 0
@@ -31,13 +32,17 @@ var statsCmd = &cobra.Command{
 			}
 
 			if stats.Answers > 0 {
-				wordsAnswered = wordsAnswered + 1
+				wordsAnswered += 1
 			}
 
 			for _, tag := range pair.Tags {
 				tagStats[tag] = tagStats[tag] + 1
 			}
 			levelStats[stats.AnswersSinceLastError] = levelStats[stats.AnswersSinceLastError] + 1
+
+			if stats.isDue() {
+				totalDue += 1
+			}
 		}
 
 		fmt.Printf("Words by number level:\n")
@@ -60,6 +65,7 @@ var statsCmd = &cobra.Command{
 
 		fmt.Printf("Words answered at least once: %7d\n", wordsAnswered)
 		fmt.Printf("Words with 100%% success:      %7d\n", alwaysCorrect)
+		fmt.Printf("words currently due:          %7d\n", totalDue)
 
 		fmt.Printf("Total words:                  %7d\n", len(vocabulary.Words))
 		fmt.Printf("Total answers:                %7d\n", totalAnswers)

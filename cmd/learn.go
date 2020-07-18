@@ -84,11 +84,14 @@ func (vocabulary Vocabulary) getStats(word WordPair) *WordStats {
 
 }
 
-func (stats WordStats) getScore() int64 {
-
+// check if word should be practiced again
+func (stats WordStats) isDue() bool {
 	requiredAge := getRecommendedDuration(stats.AnswersSinceLastError)
-	if stats.LastCorrect.After(time.Now().Add(requiredAge)) {
-		// ignore word as it has been answered recently
+	return stats.LastCorrect.Before(time.Now().Add(requiredAge))
+}
+
+func (stats WordStats) getScore() int64 {
+	if !stats.isDue() {
 		return math.MinInt64
 	}
 
