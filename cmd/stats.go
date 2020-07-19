@@ -74,7 +74,7 @@ var statsCmd = &cobra.Command{
 		for _, key := range timeKeys {
 			duration := time.Duration(key)
 			if duration == voc.MaxDuration {
-				fmt.Printf("                 never: %8d words\n", timeStats[duration])
+				fmt.Printf("%22s: %8d words\n", "never", timeStats[duration])
 			} else {
 				fmt.Printf("up to %12s ago: %8d words\n", formatTime(duration), timeStats[duration])
 			}
