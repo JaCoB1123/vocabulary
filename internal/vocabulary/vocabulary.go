@@ -62,11 +62,11 @@ func (vocabulary Vocabulary) GetStats(word WordPair) *WordStats {
 
 }
 
-func (vocabulary Vocabulary) GetLeastConfidentWord(learnTags []string) (*WordPair, *WordStats, error) {
+func (vocabulary Vocabulary) GetLeastConfidentWord(tags []string) (*WordPair, *WordStats, error) {
 	bestScore := int64(math.MaxInt64)
 	index := -1
 	for i, word := range vocabulary.Words {
-		if !containsAll(learnTags, word.Tags) {
+		if word.IsFilteredBy(tags) {
 			continue
 		}
 
@@ -85,7 +85,7 @@ func (vocabulary Vocabulary) GetLeastConfidentWord(learnTags []string) (*WordPai
 	}
 
 	if index == -1 {
-		return nil, nil, fmt.Errorf("No word matching tags %v found", learnTags)
+		return nil, nil, fmt.Errorf("No word matching tags %v found", tags)
 	}
 
 	word := vocabulary.Words[index]

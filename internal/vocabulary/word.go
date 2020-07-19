@@ -6,3 +6,7 @@ type WordPair struct {
 	Attributes  map[string]string `json:",omitempty"`
 	Tags        []string
 }
+
+func (word WordPair) IsFilteredBy(tags []string) bool {
+	return !containsAll(tags, word.Tags)
+}

@@ -10,7 +10,10 @@ import (
 	voc "github.com/JaCoB1123/vocabulary/internal/vocabulary"
 )
 
+var statsTags *[]string
+
 func init() {
+	statsTags = statsCmd.Flags().StringArrayP("tag", "t", []string{}, "Include only words having all specified tags")
 	rootCmd.AddCommand(statsCmd)
 }
 
@@ -29,6 +32,10 @@ var statsCmd = &cobra.Command{
 		alwaysCorrect := 0
 		wordsAnswered := 0
 		for _, pair := range vocabulary.Words {
+			if pair.IsFilteredBy(*statsTags) {
+				continue
+			}
+
 			stats := vocabulary.GetStats(pair)
 			totalAnswers = totalAnswers + stats.Answers
 			if stats.CorrectAnswers > 0 && stats.FalseAnswers == 0 {
