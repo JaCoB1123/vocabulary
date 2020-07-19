@@ -38,7 +38,12 @@ func (stats WordStats) RecommendedDuration() time.Duration {
 	return getRecommendedDuration(stats.AnswersSinceLastError)
 }
 
+var MaxDuration = time.Duration(math.MaxInt64)
+
 func (stats WordStats) LastDuration() time.Duration {
+	if stats.LastAnswered().IsZero() {
+		return MaxDuration
+	}
 	return getRecommendedDuration(getRecommendedScore(time.Now().Sub(stats.LastAnswered())))
 }
 

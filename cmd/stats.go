@@ -3,6 +3,7 @@ package cmd
 import (
 	"fmt"
 	"sort"
+	"time"
 
 	"github.com/spf13/cobra"
 
@@ -22,6 +23,7 @@ var statsCmd = &cobra.Command{
 
 		levelStats := make([]int, 8)
 		tagStats := map[string]int{}
+		timeStats := map[time.Duration]int{}
 		totalDue := 0
 		totalAnswers := 0
 		alwaysCorrect := 0
@@ -36,6 +38,8 @@ var statsCmd = &cobra.Command{
 			if stats.Answers > 0 {
 				wordsAnswered += 1
 			}
+
+			timeStats[stats.LastDuration()] = timeStats[stats.LastDuration()] + 1
 
 			for _, tag := range pair.Tags {
 				tagStats[tag] = tagStats[tag] + 1
@@ -53,14 +57,31 @@ var statsCmd = &cobra.Command{
 		}
 		fmt.Println()
 
-		keys := make([]string, 0, len(tagStats))
-		for k := range tagStats {
-			keys = append(keys, k)
+		timeKeys := make([]int, 0, len(timeStats))
+		for k := range timeStats {
+			timeKeys = append(timeKeys, int(k))
 		}
-		sort.Strings(keys)
+		sort.Ints(timeKeys)
+
+		fmt.Printf("Last answered:\n")
+		for _, key := range timeKeys {
+			duration := time.Duration(key)
+			if duration == voc.MaxDuration {
+				fmt.Printf("                 never: %8d words\n", timeStats[duration])
+			} else {
+				fmt.Printf("up to %12s ago: %8d words\n", formatTime(duration), timeStats[duration])
+			}
+		}
+		fmt.Println()
+
+		tagKeys := make([]string, 0, len(tagStats))
+		for k := range tagStats {
+			tagKeys = append(tagKeys, k)
+		}
+		sort.Strings(tagKeys)
 
 		fmt.Printf("Words by Tags:\n")
-		for _, key := range keys {
+		for _, key := range tagKeys {
 			fmt.Printf("%20s: %8d words\n", key, tagStats[key])
 		}
 		fmt.Println()
@@ -72,4 +93,24 @@ var statsCmd = &cobra.Command{
 		fmt.Printf("Total words:                  %7d\n", len(vocabulary.Words))
 		fmt.Printf("Total answers:                %7d\n", totalAnswers)
 	},
+}
+
+func formatTime(duration time.Duration) string {
+	if duration < time.Hour {
+		return fmt.Sprintf("%d minutes", int(duration.Minutes()))
+	}
+
+	if duration < time.Hour*24 {
+		return fmt.Sprintf("%d hours", int(duration.Hours()))
+	}
+
+	if duration < time.Hour*24*7 {
+		return fmt.Sprintf("%d days", int(duration.Hours()/24))
+	}
+
+	if duration < time.Hour*24*30 {
+		return fmt.Sprintf("%d weeks", int(duration.Hours()/24/7))
+	}
+
+	return fmt.Sprintf("%d months", int(duration.Hours()/24/30))
 }
