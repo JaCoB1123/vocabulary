@@ -32,7 +32,8 @@ var learnCommand = &cobra.Command{
 		for i := 0; i < *count; i++ {
 			pair, stats, err := vocabulary.GetLeastConfidentWord(*learnTags)
 			if err != nil {
-				log.Fatalf("Error finding word: %s\n", err.Error())
+				log.Printf("No words found: %s\n", err.Error())
+				break
 			}
 			fmt.Println("Word: ", pair.Name)
 
