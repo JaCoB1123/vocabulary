@@ -53,28 +53,39 @@ func (stats WordStats) GetScore() int64 {
 	score := int64(stats.AnswersSinceLastError + 1)
 
 	if !stats.LastAnswered().IsZero() {
-		score = score * stats.LastAnswered().Unix()
+		score = score * int64(getRecommendedScore(time.Now().Sub(stats.LastAnswered())))
 	}
 	return score
 }
 
+var recommendedDurations = []time.Duration{
+	time.Duration(0),
+	time.Duration(time.Minute * 30),
+	time.Duration(time.Hour * 3),
+	time.Duration(time.Hour * 24),
+	time.Duration(time.Hour * 24 * 7),
+	time.Duration(time.Hour * 24 * 30),
+	time.Duration(time.Hour * 24 * 30 * 6),
+}
+
 func getRecommendedDuration(sucessfullTries int) time.Duration {
-	if sucessfullTries <= 0 {
-		return time.Duration(0)
+	if sucessfullTries < 0 {
+		return recommendedDurations[0]
 	}
 
-	switch sucessfullTries {
-	case 1:
-		return time.Duration(time.Minute * 30)
-	case 2:
-		return time.Duration(time.Hour * 3)
-	case 3:
-		return time.Duration(time.Hour * 24)
-	case 4:
-		return time.Duration(time.Hour * 24 * 7)
-	case 5:
-		return time.Duration(time.Hour * 24 * 30)
-	default:
-		return time.Duration(time.Hour * 24 * 30 * 6)
+	if sucessfullTries > len(recommendedDurations) {
+		return recommendedDurations[len(recommendedDurations)-1]
 	}
+
+	return recommendedDurations[sucessfullTries]
+}
+
+func getRecommendedScore(duration time.Duration) int {
+	for index, recommendedDuration := range recommendedDurations {
+		if duration < recommendedDuration {
+			return index
+		}
+	}
+
+	return len(recommendedDurations)
 }
