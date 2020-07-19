@@ -34,14 +34,22 @@ func (stats *WordStats) LastAnswered() time.Time {
 	return stats.LastFalse
 }
 
+func (stats WordStats) RecommendedDuration() time.Duration {
+	return getRecommendedDuration(stats.AnswersSinceLastError)
+}
+
+func (stats WordStats) LastDuration() time.Duration {
+	return getRecommendedDuration(getRecommendedScore(time.Now().Sub(stats.LastAnswered())))
+}
+
 // check if word should be practiced
 func (stats WordStats) IsDue() bool {
-	if stats.LastCorrect.IsZero() {
+	if stats.LastAnswered().IsZero() {
 		return true
 	}
 
-	requiredAge := getRecommendedDuration(stats.AnswersSinceLastError)
-	dueOn := stats.LastCorrect.Add(requiredAge)
+	requiredAge := stats.RecommendedDuration()
+	dueOn := stats.LastAnswered().Add(requiredAge)
 	return time.Now().After(dueOn)
 }
 
@@ -59,13 +67,13 @@ func (stats WordStats) GetScore() int64 {
 }
 
 var recommendedDurations = []time.Duration{
-	time.Duration(0),
-	time.Duration(time.Minute * 30),
-	time.Duration(time.Hour * 3),
-	time.Duration(time.Hour * 24),
-	time.Duration(time.Hour * 24 * 7),
-	time.Duration(time.Hour * 24 * 30),
-	time.Duration(time.Hour * 24 * 30 * 6),
+	time.Minute * 10,
+	time.Hour * 1,
+	time.Hour * 4,
+	time.Hour * 24,
+	time.Hour * 24 * 7,
+	time.Hour * 24 * 30,
+	time.Hour * 24 * 30 * 6,
 }
 
 func getRecommendedDuration(sucessfullTries int) time.Duration {
@@ -87,5 +95,5 @@ func getRecommendedScore(duration time.Duration) int {
 		}
 	}
 
-	return len(recommendedDurations)
+	return len(recommendedDurations) - 1
 }
