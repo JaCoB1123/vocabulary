@@ -10,7 +10,7 @@ import (
 )
 
 type Vocabulary struct {
-	Words []WordPair
+	Words WordsList
 	Stats map[string]*WordStats
 }
 
@@ -65,34 +65,8 @@ func (vocabulary Vocabulary) GetStats(word WordPair) *WordStats {
 
 func (vocabulary Vocabulary) GetSortedWords(tags []string) []WordPair {
 	words := vocabulary.Words
-
-	if len(tags) > 0 {
-		filteredWords := []WordPair{}
-
-		for _, word := range words {
-			if word.IsFilteredBy(tags) {
-				continue
-			}
-
-			filteredWords = append(filteredWords, word)
-		}
-
-		words = filteredWords
-	}
-
-	filteredWords := []WordPair{}
-
-	for _, word := range words {
-		stats := vocabulary.GetStats(word)
-		score := stats.GetScore()
-		if score == math.MinInt64 {
-			continue
-		}
-
-		filteredWords = append(filteredWords, word)
-	}
-
-	words = filteredWords
+	words = words.FilterByTags(tags)
+	words = words.FilterRecent(vocabulary)
 
 	sort.Slice(words, func(i, j int) bool {
 		wordi := words[i]
@@ -103,7 +77,7 @@ func (vocabulary Vocabulary) GetSortedWords(tags []string) []WordPair {
 		statsj := vocabulary.GetStats(wordj)
 		scorej := statsj.GetScore()
 
-		return scorei > scorej
+		return scorei < scorej
 	})
 
 	return words[:5]
