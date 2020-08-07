@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"log"
 	"math"
+	"sort"
 
 	"github.com/JaCoB1123/vocabulary/internal/serialization"
 )
@@ -60,6 +61,52 @@ func (vocabulary Vocabulary) GetStats(word WordPair) *WordStats {
 	vocabulary.Stats[word.Name] = stats
 	return stats
 
+}
+
+func (vocabulary Vocabulary) GetSortedWords(tags []string) []WordPair {
+	words := vocabulary.Words
+
+	if len(tags) > 0 {
+		filteredWords := []WordPair{}
+
+		for _, word := range words {
+			if word.IsFilteredBy(tags) {
+				continue
+			}
+
+			filteredWords = append(filteredWords, word)
+		}
+
+		words = filteredWords
+	}
+
+	filteredWords := []WordPair{}
+
+	for _, word := range words {
+		stats := vocabulary.GetStats(word)
+		score := stats.GetScore()
+		if score == math.MinInt64 {
+			continue
+		}
+
+		filteredWords = append(filteredWords, word)
+	}
+
+	words = filteredWords
+
+	sort.Slice(words, func(i, j int) bool {
+		wordi := words[i]
+		statsi := vocabulary.GetStats(wordi)
+		scorei := statsi.GetScore()
+
+		wordj := words[j]
+		statsj := vocabulary.GetStats(wordj)
+		scorej := statsj.GetScore()
+
+		return scorei > scorej
+	})
+
+	return words[:5]
 }
 
 func (vocabulary Vocabulary) GetLeastConfidentWord(tags []string) (*WordPair, *WordStats, error) {

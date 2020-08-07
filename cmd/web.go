@@ -29,6 +29,7 @@ var webCmd = &cobra.Command{
 		}
 
 		server.Server.Get("/vocabulary/stats", server.getStats)
+		server.Server.Get("/vocabulary/learn", server.learn)
 		http.ListenAndServe(":9876", server.Server)
 	},
 }
@@ -37,4 +38,10 @@ func (s *vocabularyServer) getStats(ctx *web.Context){
 	stats := s.Vocabulary.GetVocabularyStats([]string{})
 	jsonEncoder := json.NewEncoder(ctx.ResponseWriter)
 	jsonEncoder.Encode(stats)
+}
+
+func (s *vocabularyServer) learn(ctx *web.Context){
+	words := s.Vocabulary.GetSortedWords([]string{})
+	jsonEncoder := json.NewEncoder(ctx.ResponseWriter)
+	jsonEncoder.Encode(words)
 }
