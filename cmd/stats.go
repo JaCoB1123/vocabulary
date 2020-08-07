@@ -24,48 +24,16 @@ var statsCmd = &cobra.Command{
 	Run: func(cmd *cobra.Command, args []string) {
 		vocabulary := voc.MustVocabulary(*wordsfilename, *statsfilename)
 
-		levelStats := make([]int, 8)
-		tagStats := map[string]int{}
-		timeStats := map[time.Duration]int{}
-		totalDue := 0
-		totalAnswers := 0
-		alwaysCorrect := 0
-		wordsAnswered := 0
-		for _, pair := range vocabulary.Words {
-			if pair.IsFilteredBy(*statsTags) {
-				continue
-			}
-
-			stats := vocabulary.GetStats(pair)
-			totalAnswers = totalAnswers + stats.Answers
-			if stats.CorrectAnswers > 0 && stats.FalseAnswers == 0 {
-				alwaysCorrect++
-			}
-
-			if stats.Answers > 0 {
-				wordsAnswered += 1
-			}
-
-			timeStats[stats.LastDuration()] = timeStats[stats.LastDuration()] + 1
-
-			for _, tag := range pair.Tags {
-				tagStats[tag] = tagStats[tag] + 1
-			}
-			levelStats[stats.AnswersSinceLastError] = levelStats[stats.AnswersSinceLastError] + 1
-
-			if stats.IsDue() {
-				totalDue += 1
-			}
-		}
+		stats := vocabulary.GetVocabularyStats(*statsTags)
 
 		fmt.Printf("Words by number level:\n")
-		for key, count := range levelStats {
+		for key, count := range stats.LevelStats {
 			fmt.Printf("%4d: %8d words\n", key, count)
 		}
 		fmt.Println()
 
-		timeKeys := make([]int, 0, len(timeStats))
-		for k := range timeStats {
+		timeKeys := make([]int, 0, len(stats.TimeStats))
+		for k := range stats.TimeStats {
 			timeKeys = append(timeKeys, int(k))
 		}
 		sort.Ints(timeKeys)
@@ -74,31 +42,31 @@ var statsCmd = &cobra.Command{
 		for _, key := range timeKeys {
 			duration := time.Duration(key)
 			if duration == voc.MaxDuration {
-				fmt.Printf("%22s: %8d words\n", "never", timeStats[duration])
+				fmt.Printf("%22s: %8d words\n", "never", stats.TimeStats[duration])
 			} else {
-				fmt.Printf("up to %12s ago: %8d words\n", formatTime(duration), timeStats[duration])
+				fmt.Printf("up to %12s ago: %8d words\n", formatTime(duration), stats.TimeStats[duration])
 			}
 		}
 		fmt.Println()
 
-		tagKeys := make([]string, 0, len(tagStats))
-		for k := range tagStats {
+		tagKeys := make([]string, 0, len(stats.TagStats))
+		for k := range stats.TagStats {
 			tagKeys = append(tagKeys, k)
 		}
 		sort.Strings(tagKeys)
 
 		fmt.Printf("Words by Tags:\n")
 		for _, key := range tagKeys {
-			fmt.Printf("%20s: %8d words\n", key, tagStats[key])
+			fmt.Printf("%20s: %8d words\n", key, stats.TagStats[key])
 		}
 		fmt.Println()
 
-		fmt.Printf("Words answered at least once: %7d\n", wordsAnswered)
-		fmt.Printf("Words with 100%% success:      %7d\n", alwaysCorrect)
-		fmt.Printf("words currently due:          %7d\n", totalDue)
+		fmt.Printf("Words answered at least once: %7d\n", stats.WordsAnswered)
+		fmt.Printf("Words with 100%% success:      %7d\n", stats.AlwaysCorrect)
+		fmt.Printf("words currently due:          %7d\n", stats.TotalDue)
 
 		fmt.Printf("Total words:                  %7d\n", len(vocabulary.Words))
-		fmt.Printf("Total answers:                %7d\n", totalAnswers)
+		fmt.Printf("Total answers:                %7d\n", stats.TotalAnswers)
 	},
 }
 
