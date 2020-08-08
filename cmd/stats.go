@@ -65,7 +65,7 @@ var statsCmd = &cobra.Command{
 		fmt.Printf("Words with 100%% success:      %7d\n", stats.AlwaysCorrect)
 		fmt.Printf("words currently due:          %7d\n", stats.TotalDue)
 
-		fmt.Printf("Total words:                  %7d\n", len(vocabulary.Words))
+		fmt.Printf("Total words:                  %7d\n", stats.TotalWords)
 		fmt.Printf("Total answers:                %7d\n", stats.TotalAnswers)
 	},
 }

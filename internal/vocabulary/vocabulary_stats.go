@@ -9,6 +9,7 @@ type VocabularyStats struct {
 	LevelStats    []int
 	TagStats      map[string]int
 	TotalAnswers  int
+	TotalWords    int
 	AlwaysCorrect int
 	WordsAnswered int
 	TotalDue      int
@@ -19,6 +20,7 @@ func (vocabulary Vocabulary) GetVocabularyStats(statsTags []string) *VocabularyS
 	stats.TimeStats = map[time.Duration]int{}
 	stats.LevelStats = make([]int, 8)
 	stats.TagStats = map[string]int{}
+	stats.TotalWords = len(vocabulary.Words)
 	for _, pair := range vocabulary.Words {
 		if pair.IsFilteredBy(statsTags) {
 			continue
