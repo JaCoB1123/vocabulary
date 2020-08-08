@@ -1,8 +1,8 @@
 <script>
 	let stats;
 	fetch("/api/stats")
-				.then(x =>x.json())
-                .then(x => stats = x);
+        .then(x =>x.json())
+        .then(x => stats = x);
                 
     function formatTime(time) {
         time = time/1000/1000/1000/60;
