@@ -3,6 +3,8 @@ package cmd
 import (
 	"encoding/json"
 	"net/http"
+	"os"
+	"fmt"
 
 	"path"
 
@@ -70,6 +72,29 @@ func (s *vocabularyServer) answer(ctx *web.Context){
 	s.Vocabulary.Save(*wordsfilename, *statsfilename)
 }
 
+var	STATIC_DIR = "web/dist"
+
 func (s *vocabularyServer) static(ctx *web.Context, filepath string){
-	http.ServeFile(ctx.ResponseWriter, ctx.Request, path.Join("web/public", filepath))
+
+	fmt.Println(filepath)
+	if tryServeFile(ctx, filepath) {
+		return
+	}
+
+	http.ServeFile(ctx.ResponseWriter, ctx.Request, path.Join(STATIC_DIR, "__app.html"))
+}
+
+func tryServeFile(ctx *web.Context, filepath string) bool {
+	if filepath == "/" || filepath == "" {
+		return false
+	}
+
+	filepath = path.Join(STATIC_DIR, filepath)
+	_, err := os.Stat(filepath)
+	if os.IsNotExist(err) {
+		return false
+	}
+	
+	http.ServeFile(ctx.ResponseWriter, ctx.Request, filepath)
+	return true
 }
