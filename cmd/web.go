@@ -30,8 +30,8 @@ var webCmd = &cobra.Command{
 			Vocabulary: voc.MustVocabulary(*wordsfilename, *statsfilename),
 		}
 
-		server.Server.Get("/vocabulary/stats", server.getStats)
-		server.Server.Get("/vocabulary/learn", server.learn)
+		server.Server.Get("/api/stats", server.getStats)
+		server.Server.Get("/api/learn", server.learn)
 		server.Server.Get("/(.*)", server.static)
 		http.ListenAndServe(":9876", server.Server)
 	},

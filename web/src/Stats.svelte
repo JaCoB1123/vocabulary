@@ -1,6 +1,6 @@
 <script>
 	let stats;
-	fetch("/vocabulary/stats")
+	fetch("/api/stats")
 				.then(x =>x.json())
                 .then(x => stats = x);
                 
