@@ -50,5 +50,5 @@ func (s *vocabularyServer) learn(ctx *web.Context){
 }
 
 func (s *vocabularyServer) static(ctx *web.Context, filepath string){
-	http.ServeFile(ctx.ResponseWriter, ctx.Request, path.Join("web", filepath))
+	http.ServeFile(ctx.ResponseWriter, ctx.Request, path.Join("web/public", filepath))
 }
