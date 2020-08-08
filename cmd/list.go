@@ -19,7 +19,7 @@ var listCmd = &cobra.Command{
 		vocabulary := voc.MustVocabulary(*wordsfilename, *statsfilename)
 
 		for _, pair := range vocabulary.Words {
-			stats := vocabulary.GetStats(pair)
+			stats := vocabulary.GetStatsByWord(pair)
 			score := stats.GetScore()
 
 			fmt.Printf("%40s: %40s (%10d)\n", pair.Name, pair.Translation, score)

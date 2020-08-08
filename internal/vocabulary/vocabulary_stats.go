@@ -26,7 +26,7 @@ func (vocabulary Vocabulary) GetVocabularyStats(statsTags []string) *VocabularyS
 			continue
 		}
 
-		wordStats := vocabulary.GetStats(pair)
+		wordStats := vocabulary.GetStatsByWord(pair)
 		stats.TotalAnswers = stats.TotalAnswers + wordStats.Answers
 		if wordStats.CorrectAnswers > 0 && wordStats.FalseAnswers == 0 {
 			stats.AlwaysCorrect++

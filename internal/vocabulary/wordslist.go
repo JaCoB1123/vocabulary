@@ -28,7 +28,7 @@ func (words WordsList) FilterRecent(vocabulary Vocabulary) WordsList {
 	filteredWords := []WordPair{}
 
 	for _, word := range words {
-		stats := vocabulary.GetStats(word)
+		stats := vocabulary.GetStatsByWord(word)
 		score := stats.GetScore()
 		if score == math.MinInt64 {
 			continue

@@ -52,15 +52,18 @@ func (vocabulary Vocabulary) Save(wordsfilename, statsfilename string) {
 	serialization.SerializeFile(statsfilename, vocabulary.Stats)
 }
 
-func (vocabulary Vocabulary) GetStats(word WordPair) *WordStats {
+func (vocabulary Vocabulary) GetStatsByWord(word WordPair) *WordStats {
+	return vocabulary.GetStats(word.Name)
+}
+
+func (vocabulary Vocabulary) GetStats(word string) *WordStats {
 	var stats *WordStats
-	if mapstats, ok := vocabulary.Stats[word.Name]; ok {
+	if mapstats, ok := vocabulary.Stats[word]; ok {
 		return mapstats
 	}
 	stats = &WordStats{}
-	vocabulary.Stats[word.Name] = stats
+	vocabulary.Stats[word] = stats
 	return stats
-
 }
 
 func (vocabulary Vocabulary) GetSortedWords(tags []string) []WordPair {
@@ -70,17 +73,17 @@ func (vocabulary Vocabulary) GetSortedWords(tags []string) []WordPair {
 
 	sort.Slice(words, func(i, j int) bool {
 		wordi := words[i]
-		statsi := vocabulary.GetStats(wordi)
+		statsi := vocabulary.GetStatsByWord(wordi)
 		scorei := statsi.GetScore()
 
 		wordj := words[j]
-		statsj := vocabulary.GetStats(wordj)
+		statsj := vocabulary.GetStatsByWord(wordj)
 		scorej := statsj.GetScore()
 
 		return scorei < scorej
 	})
 
-	return words[:5]
+	return words
 }
 
 func (vocabulary Vocabulary) GetLeastConfidentWord(tags []string) (*WordPair, *WordStats, error) {
@@ -91,7 +94,7 @@ func (vocabulary Vocabulary) GetLeastConfidentWord(tags []string) (*WordPair, *W
 			continue
 		}
 
-		stats := vocabulary.GetStats(word)
+		stats := vocabulary.GetStatsByWord(word)
 
 		score := stats.GetScore()
 		if score == math.MinInt64 {
