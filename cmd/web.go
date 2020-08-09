@@ -4,7 +4,8 @@ import (
 	"encoding/json"
 	"net/http"
 	"os"
-	"fmt"
+	"net/url"
+	"net/http/httputil"
 
 	"path"
 
@@ -32,12 +33,28 @@ var webCmd = &cobra.Command{
 			Vocabulary: voc.MustVocabulary(*wordsfilename, *statsfilename),
 		}
 
+		remote, err := url.Parse("http://localhost:5000")
+		if err != nil {
+				panic(err)
+		}
+	
+		proxy := httputil.NewSingleHostReverseProxy(remote)
+
 		server.Server.Get("/api/stats", server.getStats)
 		server.Server.Get("/api/learn", server.learn)
 		server.Server.Post("/api/answer", server.answer)
-		server.Server.Get("/(.*)", server.static)
+		server.Server.Get("/(.*)", proxyHandler(proxy))
+
+
 		http.ListenAndServe(":9876", server.Server)
 	},
+}
+		
+func proxyHandler(p *httputil.ReverseProxy) func(ctx *web.Context) {
+		return func(ctx *web.Context) {
+			ctx.Server.Logger.Println("Proxying", ctx.Request.URL)
+				p.ServeHTTP(ctx.ResponseWriter, ctx.Request)
+		}
 }
 
 func (s *vocabularyServer) getStats(ctx *web.Context){
@@ -49,7 +66,7 @@ func (s *vocabularyServer) getStats(ctx *web.Context){
 func (s *vocabularyServer) learn(ctx *web.Context){
 	words := s.Vocabulary.GetSortedWords([]string{})
 	jsonEncoder := json.NewEncoder(ctx.ResponseWriter)
-	jsonEncoder.Encode(words)
+	jsonEncoder.Encode(words[:10])
 }
 
 type answerRequest struct {
@@ -75,8 +92,6 @@ func (s *vocabularyServer) answer(ctx *web.Context){
 var	STATIC_DIR = "web/dist"
 
 func (s *vocabularyServer) static(ctx *web.Context, filepath string){
-
-	fmt.Println(filepath)
 	if tryServeFile(ctx, filepath) {
 		return
 	}
