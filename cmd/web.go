@@ -51,10 +51,9 @@ var webCmd = &cobra.Command{
 }
 		
 func proxyHandler(p *httputil.ReverseProxy) func(ctx *web.Context) {
-		return func(ctx *web.Context) {
-			ctx.Server.Logger.Println("Proxying", ctx.Request.URL)
-				p.ServeHTTP(ctx.ResponseWriter, ctx.Request)
-		}
+	return func(ctx *web.Context) {
+		p.ServeHTTP(ctx.ResponseWriter, ctx.Request)
+	}
 }
 
 func (s *vocabularyServer) getStats(ctx *web.Context){
