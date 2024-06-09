@@ -22,7 +22,7 @@
 </script>
 
 <main>
-    <pre>{JSON.stringify(word)}</pre>
+    <h1>Learning word {index+1} of {words.length}</h1>
     {#if loading}
         Loading...
     {:else}
