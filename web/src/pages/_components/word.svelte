@@ -1,4 +1,8 @@
 <script>
+	import { createEventDispatcher } from 'svelte';
+
+    const dispatch = createEventDispatcher();
+    
     export let word;
     let resultVisible = false;
 
@@ -7,11 +11,11 @@
     }
 
     function onCorrect() {
-        //fetch("/api/answer")
+		dispatch('correct', word);
     }
-    
+
     function onFalse() {
-        //fetch("/api/answer")
+		dispatch('false', word);
     }
 </script>
 

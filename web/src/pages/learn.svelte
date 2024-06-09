@@ -5,27 +5,27 @@
     let loading = true;
 
     let index = 0;
-    $: word = words[index];
+    $: word = index>=words.length ? {} : words[index];
     
     fetch("/api/learn")
         .then(x => x.json())
         .then(x => words = x)
         .then(() => loading = false);
+
+    function onCorrect(word) {
+        index++;
+    }
+
+    function onFalse(word) {
+        index++;
+    }
 </script>
 
 <main>
+    <pre>{JSON.stringify(word)}</pre>
     {#if loading}
         Loading...
     {:else}
-        <Word word={word} />
-        <ul>
-        {#each words as word}
-            <li>{JSON.stringify(word)}</li>
-        {/each}
-        </ul>
-        <pre></pre>
+        <Word word={word} on:correct={onCorrect} on:false={onFalse} />
     {/if}
 </main>
-
-<style>
-</style>
